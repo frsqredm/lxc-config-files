@@ -61,6 +61,7 @@ f3() {
 
 # Get config file for zsh, OMP
 f4() {
+    # Asume code-server already installed
     cp -r ~/.config/code-server ~/code-server-backup
     rm -rf ~/.config # Remove existing .config folder
     git clone https://github.com/frsqredm/lxc-config-files.git ~/.config
@@ -89,10 +90,10 @@ f6 () {
 
 if [ "$ANS" == "yes" ]; then
     export -f f1 f2 f3 f4 f5 &&
-    gum spin --spinner minidot --show-error --title="Install packages ... " -- bash -c f1 &&
-    gum spin --spinner minidot --show-error --title="Config git ... " -- bash -c f2 &&
-    gum spin --spinner minidot --show-error --title="Install OMP, nodeJS, bunJS ... " -- bash -c f3 &&
-    gum spin --spinner minidot --show-error --title="Getting config files for zsh, OMP ... " -- bash -c f4 &&
+    gum spin --spinner minidot --show-output --title="Install packages ... " -- bash -c f1 &&
+    gum spin --spinner minidot --show-output --title="Config git ... " -- bash -c f2 &&
+    gum spin --spinner minidot --show-output --title="Install OMP, nodeJS, bunJS ... " -- bash -c f3 &&
+    gum spin --spinner minidot --show-output --title="Getting config files for zsh, OMP ... " -- bash -c f4 &&
     bash -c f5
 else
     export -f f6 &&

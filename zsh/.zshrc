@@ -37,12 +37,7 @@ eval "$(oh-my-posh init zsh --config ~/.config/omp/.conf.omp.toml)"
 
 # Add in snippets
 zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-zinit snippet OMZP::archlinux
 zinit snippet OMZP::command-not-found
-zinit snippet OMZP::gem
-zinit snippet OMZP::rails
-zinit snippet OMZP::asdf
 
 # Load completions
 autoload -Uz compinit && compinit
@@ -83,7 +78,6 @@ alias nivm='nvim'
 alias nv='nvim'
 alias vim='nvim'
 alias c='clear'
-alias neofetch='neofetch --source ~/.config/neofetch/arch_ascii'
 
 # Shell integrations
 eval "$(fzf --zsh)"
