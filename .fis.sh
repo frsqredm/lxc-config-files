@@ -5,7 +5,7 @@ fis_version="1.0.5-b"
 touch ~/.fis.log
 
 # Edit pacman config
-f0() {
+f-pacman() {
     printf "\nEditing pacman config ... \n"
     sed -i "s/#ParallelDownloads.*/ParallelDownloads = 10\nILoveCandy/" /etc/pacman.conf
     sleep 1
@@ -17,7 +17,7 @@ f0() {
     sleep 2
 }
 
-export -f f0 && bash -c f0
+export -f f-pacman && bash -c f-pacman
 
 # Initialize the keyring
 f-keyring() {
@@ -147,10 +147,10 @@ f-cancell () {
 
 if [ "$ANS" == "yes" ]; then
     export -f f-packages f-git f-extra f-config f-finish &&
-    gum spin --spinner minidot --show-error --title="Install essential packages ... " -- bash -c f-packages &&
-    gum spin --spinner minidot --show-error --title="Config git ... " -- bash -c f-git &&
-    gum spin --spinner minidot --show-error --title="Install OMP, nodeJS, bunJS ... " -- bash -c f-extra &&
-    gum spin --spinner minidot --show-error --title="Getting config files for zsh, OMP ... " -- bash -c f-config &&
+    gum spin --spinner minidot --show-output --title="Install essential packages ... " -- bash -c f-packages &&
+    gum spin --spinner minidot --show-output --title="Config git ... " -- bash -c f-git &&
+    gum spin --spinner minidot --show-output --title="Install OMP, nodeJS, bunJS ... " -- bash -c f-extra &&
+    gum spin --spinner minidot --show-output --title="Getting config files for zsh, OMP ... " -- bash -c f-config &&
     bash -c f-finish
 else
     export -f f-cancell && bash -c f-cancell
