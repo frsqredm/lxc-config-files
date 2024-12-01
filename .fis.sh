@@ -4,7 +4,7 @@ fis_version="1.0.0"
 
 # Install gum
 printf "\nInstalling gum ... \n"
-pacman -S gum
+pacman -S --noconfirm gum
 printf "\n[ \u2714 ] done\n"
 sleep 2
 
@@ -26,7 +26,7 @@ f1() {
     rm -rf /etc/pacman.d/gnupg
     pacman-key --init
     pacman-key --populate
-    pacman -Sy archlinux-keyring
+    pacman -Sy --noconfirm archlinux-keyring
     pacman -Su --noconfirm
 }
 
@@ -48,7 +48,7 @@ ANS=$(gum choose {yes,no})
 
 # Install packages
 f2() {
-    pacman -S zsh pacman-contrib git tree unzip wget fzf zoxide postgresql postgresql-libs
+    pacman -S --noconfirm zsh pacman-contrib git tree unzip wget fzf zoxide postgresql postgresql-libs
     systemctl enable --now paccache.timer
     sleep 2
     printf "\n[ \u2714 ] done\n"
