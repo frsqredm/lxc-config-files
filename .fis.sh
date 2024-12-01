@@ -8,17 +8,20 @@ pacman -S --noconfirm gum
 printf "\n[ \u2714 ] done\n"
 sleep 2
 
-# Modify pacman ParallelDownloads
+# Edit pacman config
 f0() {
     sed -i "s/#ParallelDownloads.*/ParallelDownloads = 10\nILoveCandy/" /etc/pacman.conf
+    sleep 1
     sed -i "s/#Color/Color/" /etc/pacman.conf
-    sleep 2
+    sleep 1
+    sed -i "s/#DisableSandbox/DisableSandbox/"
+    sleep 1
     printf "\n[ \u2714 ] done\n"
     sleep 2
 }
 
 export -f f0
-gum spin --spinner minidot --show-error --title="Modifing pacman ParallelDownloads, adding ILoveCandy and Color ..." -- \
+gum spin --spinner minidot --show-error --title="Editing pacman config ..." -- \
     bash -c f0
 
 # Initialize the keyring
