@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fis_version="v1.0.5-b"
+fis_version="v1.1.0-p"
 
 touch ~/.fis.log
 
@@ -66,7 +66,7 @@ gum spin --spinner minidot --show-error --title="Enabling reflector ... " -- bas
 # Introduction
 gum style \
 	    --border normal \
-	    --align left --width 60 --margin "0 0" --padding "0 0" \
+	    --align left --width $COLUMNS --margin "0 0" --padding "0 0" \
 	    "FIS Install Script" \
         "1. Install essential packages: pacman-contrib zsh git unzip postgresql wget" \
         "2. Install more packages: reflector python fzf zoxide" \
