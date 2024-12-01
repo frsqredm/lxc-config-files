@@ -1,125 +1,157 @@
 #!/bin/bash
 
-fis_version="1.0.0"
+fis_version="1.0.5-b"
 
-# Install gum
-printf "\nInstalling gum ... \n"
-pacman -S --noconfirm gum
-printf "\n[ \u2714 ] done\n"
-sleep 2
+touch ~/.fis.log
 
 # Edit pacman config
 f0() {
+    printf "\nEditing pacman config ... \n"
     sed -i "s/#ParallelDownloads.*/ParallelDownloads = 10\nILoveCandy/" /etc/pacman.conf
     sleep 1
     sed -i "s/#Color/Color/" /etc/pacman.conf
     sleep 1
-    sed -i "s/#DisableSandbox/DisableSandbox/"
-    sleep 1
-    printf "\n[ \u2714 ] done\n"
+    sed -i "s/#DisableSandbox/DisableSandbox/" /etc/pacman.conf
+    printf "\n[OK] Pacman config done!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     sleep 2
 }
 
-export -f f0
-gum spin --spinner minidot --show-error --title="Editing pacman config ..." -- \
-    bash -c f0
+export -f f0 && bash -c f0
 
 # Initialize the keyring
-f1() {
+f-keyring() {
+    printf "\nInitializing the keyring ... \n" &>> ~/.fis.log
     rm -rf /etc/pacman.d/gnupg
-    pacman-key --init
-    pacman-key --populate
-    pacman -Sy --noconfirm archlinux-keyring
-    pacman -Su --noconfirm
+    pacman-key --init &>> ~/.fis.log
+    pacman-key --populate &>> ~/.fis.log
+    pacman -Sy --noconfirm archlinux-keyring &>> ~/.fis.log
+    pacman -Su --noconfirm &>> ~/.fis.log
+    printf "\n[OK] Keyring done!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
 }
 
-export -f f1
-gum spin --spinner minidot --show-error --title="Initializing the keyring ... " -- bash -c f1
+export -f f-keyring && bash -c f-keyring
+
+# Install gum and reflector
+printf "\nInstalling gum and reflector ... \n"
+pacman -S --noconfirm --needed gum reflector &>> ~/.fis.log
+printf "\n[OK] Gum and reflector installed!" &>> ~/.fis.log
+tail -n 1 ~/.fis.log
+sleep 2
+
+# Enable reflector
+f-reflector() {
+    sed -i "s/# --country.*/--country Singapore,Hong Kong,Vietnam/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
+    sed -i "s/--latest 5/--latest 10/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
+    sed -i "s/--sort age/--sort rate/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
+    systemctl enable --now reflector.timer &>> ~/.fis.log
+    systemctl start reflector.service &>> ~/.fis.log
+    printf "\n[OK] Reflector started!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
+    sleep 2
+}
+
+export -f f-reflector
+gum spin --spinner minidot --show-error --title="Enabling reflector ... " -- bash -c f-reflector
 
 # Introduction
 gum style \
 	    --border normal \
 	    --align left --width 60 --margin "0 0" --padding "0 0" \
 	    "FIS Install Script" \
-        "1. Install essential packages: zsh git tree unzip postgresql wget curl fzf zoxide" \
-        "2. Git config" \
-        "3. Install: OMP, nodeJS, bunJS" \
-        "4. Get config file for zsh, OMP"
+        "1. Install essential packages: pacman-contrib zsh git unzip postgresql wget" \
+        "2. Install more packages: reflector python fzf zoxide" \
+        "3. Git config" \
+        "4. Install: OMP, nodeJS, bunJS" \
+        "5. Get config file for zsh, OMP"
 
 printf "\nContinue ? \n"
 ANS=$(gum choose {yes,no})
+printf "\n"
 
 # Install packages
-f2() {
-    pacman -S --noconfirm zsh pacman-contrib git tree unzip wget fzf zoxide postgresql postgresql-libs
+f-packages() {
+    pacman -S --noconfirm --needed base-devel pacman-contrib libffi \
+        man zsh git unzip wget fzf zoxide postgresql postgresql-libs \
+        python-pip python-pipx &>> ~/.fis.log
     systemctl enable --now paccache.timer
     sleep 2
-    printf "\n[ \u2714 ] done\n"
+    printf "\n[OK] Essential packages installed!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     sleep 2
 }
 
 # Config git
-f3() {
+f-git() {
     git config --global user.name frsqredm
     git config --global user.email fr.sqre.dm@gmail.com
     git config --global credential.helper "cache --timeout=604800"
     git config --global init.defaultBranch main
-    sleep 2
-    printf "\n[ \u2714 ] done config git as frsqredm\n"
+    printf "\n[OK] Config git as frsqredm done!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     sleep 2
 }
 
 # Install OMP, nodeJS, bunJS
-f4() {
-    curl -s https://ohmyposh.dev/install.sh | bash -s
-    printf "\n[ \u2714 ] oh-my-posh v$(oh-my-posh version) installed\n"
+f-extra() {
+    curl -s https://ohmyposh.dev/install.sh | bash -s &>> ~/.fis.log
+    printf "\n[OK] oh-my-posh v$(oh-my-posh version) installed" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
+    printf "\n" &>> ~/.fis.log
     sleep 1
-    curl -fsSL https://fnm.vercel.app/install | bash
-    curl -fsSL https://bun.sh/install | bash
-    source ~/.bashrc
-    fnm use --install-if-missing 22
-    printf "\n[ \u2714 ] nodeJS $(node -v) installed\n"
-    sleep 2
-    printf "\n[ \u2714 ] bunJS v$(bun -v) installed\n"
+    curl -fsSL https://fnm.vercel.app/install | bash &>> ~/.fis.log
+    curl -fsSL https://bun.sh/install | bash &>> ~/.fis.log
+    source ~/.bashrc &>> ~/.fis.log
+    fnm use --install-if-missing 22 &>> ~/.fis.log
+    printf "\n[OK] NodeJS $(node -v) installed!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
+    printf "\n[OK] BunJS v$(bun -v) installed!" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     sleep 2
 }
 
 # Get config file for zsh, OMP
-f5() {
+f-config() {
     # Asume code-server already installed
-    cp -r ~/.config/code-server ~/code-server-backup
-    rm -rf ~/.config # Remove existing .config folder
-    git clone https://github.com/frsqredm/lxc-config-files.git ~/.config
-    cp -r ~/code-server-backup ~/.config/code-server
-    rm -rf ~/code-server-backup
-    rm ~/.zshrc # Remove existing .zshrc file
-    ln -s ~/.config/zsh/.zshrc ~/.zshrc
-    printf "\n[ \u2714 ] config files save at ~/.config\n"
+    cp -r ~/.config/code-server ~/code-server-backup &>> ~/.fis.log
+    rm -rf ~/.config &>> ~/.fis.log # Remove existing .config folder 
+    git clone https://github.com/frsqredm/lxc-config-files.git ~/.config &>> ~/.fis.log
+    cp -r ~/code-server-backup ~/.config/code-server &>> ~/.fis.log
+    rm -rf ~/code-server-backup &>> ~/.fis.log
+    rm ~/.zshrc &>> ~/.fis.log # Remove existing .zshrc file
+    ln -s ~/.config/zsh/.zshrc ~/.zshrc &>> ~/.fis.log
+    printf "\n[OK] Config files save at ~/.config !" &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     sleep 2
 }
 
 # Finish
-f6() {
-    printf "\n[ \u2714 ] FIS Install Script $fis_version finished !! \n"
-    printf "\nTODO: chsh and exec zsh to change default shell to zsh"
+f-finish() {
+    printf "\n[OK] FIS Install Script $fis_version finished !! \n"
+    printf "\nTODO: 
+    1. Change default shell by chsh and exec zsh.
+    2. Delete .fis.log file. \n"
     rm ~/.fis.sh
     sleep 2
 }
 
 # Cancell script
-f7 () {
+f-cancell () {
+    gum spin --spinner minidot --title="Cancelling script ..." -- sleep 2
+    printf "\n[OK] Script cancelled! \n"
     printf "\nSee you later! \n"
     rm ~/.fis.sh
     sleep 2
 }
 
 if [ "$ANS" == "yes" ]; then
-    export -f f2 f3 f4 f5 f6 &&
-    gum spin --spinner minidot --show-error --title="Install essential packages ... " -- bash -c f2 &&
-    gum spin --spinner minidot --show-error --title="Config git ... " -- bash -c f3 &&
-    gum spin --spinner minidot --show-error --title="Install OMP, nodeJS, bunJS ... " -- bash -c f4 &&
-    gum spin --spinner minidot --show-error --title="Getting config files for zsh, OMP ... " -- bash -c f5 &&
-    bash -c f6
+    export -f f-packages f-git f-extra f-config f-finish &&
+    gum spin --spinner minidot --show-error --title="Install essential packages ... " -- bash -c f-packages &&
+    gum spin --spinner minidot --show-error --title="Config git ... " -- bash -c f-git &&
+    gum spin --spinner minidot --show-error --title="Install OMP, nodeJS, bunJS ... " -- bash -c f-extra &&
+    gum spin --spinner minidot --show-error --title="Getting config files for zsh, OMP ... " -- bash -c f-config &&
+    bash -c f-finish
 else
-    export -f f7 && bash -c f7
+    export -f f-cancell && bash -c f-cancell
 fi
