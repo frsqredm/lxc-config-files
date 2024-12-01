@@ -3,21 +3,42 @@
 fis_version="1.0.0"
 
 # Install gum
-echo "Installing gum ..."
-apt -y install gpg
-mkdir -p /etc/apt/keyrings
-curl -fsSL https://repo.charm.sh/apt/gpg.key | gpg --dearmor -o /etc/apt/keyrings/charm.gpg
-echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | tee /etc/apt/sources.list.d/charm.list
-apt update && apt install gum
-echo -e "\n-----> done\n"
-sleep 1
+printf "\nInstalling gum ... \n"
+pacman -S gum
+printf "\n[ \u2714 ] done\n"
+sleep 2
+
+# Modify pacman ParallelDownloads
+f0() {
+    sed -i "s/#ParallelDownloads.*/ParallelDownloads = 10\nILoveCandy/" /etc/pacman.conf
+    sed -i "s/#Color/Color/" /etc/pacman.conf
+    sleep 2
+    printf "\n[ \u2714 ] done\n"
+    sleep 2
+}
+
+export -f f0
+gum spin --spinner minidot --show-error --title="Modifing pacman ParallelDownloads, adding ILoveCandy and Color ..." -- \
+    bash -c f0
+
+# Initialize the keyring
+f1() {
+    rm -rf /etc/pacman.d/gnupg
+    pacman-key --init
+    pacman-key --populate
+    pacman -Sy archlinux-keyring
+    pacman -Su --noconfirm
+}
+
+export -f f1
+gum spin --spinner minidot --show-error --title="Initializing the keyring ... " -- bash -c f1
 
 # Introduction
 gum style \
 	    --border normal \
 	    --align left --width 60 --margin "0 0" --padding "0 0" \
 	    "FIS Install Script" \
-        "1. Essential packages: zsh git tree unzip postgresql wget curl fzf zoxide" \
+        "1. Install essential packages: zsh git tree unzip postgresql wget curl fzf zoxide" \
         "2. Git config" \
         "3. Install: OMP, nodeJS, bunJS" \
         "4. Get config file for zsh, OMP"
@@ -26,41 +47,42 @@ printf "\nContinue ? \n"
 ANS=$(gum choose {yes,no})
 
 # Install packages
-f1() {
-    apt -y install zsh git tree unzip postgresql wget curl fzf
-    sleep 1
-    curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+f2() {
+    pacman -S zsh pacman-contrib git tree unzip wget fzf zoxide postgresql postgresql-libs
+    systemctl enable --now paccache.timer
+    sleep 2
     printf "\n[ \u2714 ] done\n"
-    sleep 1
+    sleep 2
 }
 
 # Config git
-f2() {
+f3() {
     git config --global user.name frsqredm
     git config --global user.email fr.sqre.dm@gmail.com
     git config --global credential.helper "cache --timeout=604800"
     git config --global init.defaultBranch main
     sleep 2
     printf "\n[ \u2714 ] done config git as frsqredm\n"
-    sleep 1
+    sleep 2
 }
 
 # Install OMP, nodeJS, bunJS
-f3() {
+f4() {
     curl -s https://ohmyposh.dev/install.sh | bash -s
-    printf "\n[ \u2714 ] oh-my-posh v$(oh-my-posh --version) installed\n"
+    printf "\n[ \u2714 ] oh-my-posh v$(oh-my-posh version) installed\n"
     sleep 1
     curl -fsSL https://fnm.vercel.app/install | bash
     curl -fsSL https://bun.sh/install | bash
     source ~/.bashrc
     fnm use --install-if-missing 22
     printf "\n[ \u2714 ] nodeJS $(node -v) installed\n"
-    sleep 1
+    sleep 2
     printf "\n[ \u2714 ] bunJS v$(bun -v) installed\n"
+    sleep 2
 }
 
 # Get config file for zsh, OMP
-f4() {
+f5() {
     # Asume code-server already installed
     cp -r ~/.config/code-server ~/code-server-backup
     rm -rf ~/.config # Remove existing .config folder
@@ -70,32 +92,31 @@ f4() {
     rm ~/.zshrc # Remove existing .zshrc file
     ln -s ~/.config/zsh/.zshrc ~/.zshrc
     printf "\n[ \u2714 ] config files save at ~/.config\n"
-    sleep 1
+    sleep 2
 }
 
 # Finish
-f5() {
+f6() {
     printf "\n[ \u2714 ] FIS Install Script $fis_version finished !! \n"
     printf "\nTODO: chsh and exec zsh to change default shell to zsh"
     rm ~/.fis.sh
-    sleep 1
+    sleep 2
 }
 
 # Cancell script
-f6 () {
-    printf "\nSee you later\n"
+f7 () {
+    printf "\nSee you later! \n"
     rm ~/.fis.sh
-    sleep 1
+    sleep 2
 }
 
 if [ "$ANS" == "yes" ]; then
-    export -f f1 f2 f3 f4 f5 &&
-    gum spin --spinner minidot --show-output --title="Install packages ... " -- bash -c f1 &&
-    gum spin --spinner minidot --show-output --title="Config git ... " -- bash -c f2 &&
-    gum spin --spinner minidot --show-output --title="Install OMP, nodeJS, bunJS ... " -- bash -c f3 &&
-    gum spin --spinner minidot --show-output --title="Getting config files for zsh, OMP ... " -- bash -c f4 &&
-    bash -c f5
-else
-    export -f f6 &&
+    export -f f2 f3 f4 f5 f6 &&
+    gum spin --spinner minidot --show-error --title="Install essential packages ... " -- bash -c f2 &&
+    gum spin --spinner minidot --show-error --title="Config git ... " -- bash -c f3 &&
+    gum spin --spinner minidot --show-error --title="Install OMP, nodeJS, bunJS ... " -- bash -c f4 &&
+    gum spin --spinner minidot --show-error --title="Getting config files for zsh, OMP ... " -- bash -c f5 &&
     bash -c f6
+else
+    export -f f7 && bash -c f7
 fi
