@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fis_version="1.0.5-b"
+fis_version="v1.0.5-b"
 
 touch ~/.fis.log
 
@@ -8,13 +8,13 @@ touch ~/.fis.log
 f-pacman() {
     printf "\nEditing pacman config ... " &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sed -i "s/#ParallelDownloads.*/ParallelDownloads = 10\nILoveCandy/" /etc/pacman.conf
-    sleep 1
     sed -i "s/#Color/Color/" /etc/pacman.conf
-    sleep 1
     sed -i "s/#DisableSandbox/DisableSandbox/" /etc/pacman.conf
     printf "\n[OK] Pacman config done!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sleep 2
 }
 
@@ -24,6 +24,7 @@ export -f f-pacman && bash -c f-pacman
 f-keyring() {
     printf "\nInitializing the keyring ... " &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     rm -rf /etc/pacman.d/gnupg
     pacman-key --init &>> ~/.fis.log
     pacman-key --populate &>> ~/.fis.log
@@ -31,26 +32,31 @@ f-keyring() {
     pacman -Su --noconfirm &>> ~/.fis.log
     printf "\n[OK] Keyring done!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
 }
 
 export -f f-keyring && bash -c f-keyring
 
 # Install gum and reflector
-printf "\nInstalling gum and reflector ... \n"
+printf "\nInstalling gum and reflector ... " &>> ~/.fis.log
+tail -n 1 ~/.fis.log
+printf "\n"
 pacman -S --noconfirm --needed gum reflector &>> ~/.fis.log
 printf "\n[OK] Gum and reflector installed!" &>> ~/.fis.log
 tail -n 1 ~/.fis.log
+printf "\n"
 sleep 2
 
 # Enable reflector
 f-reflector() {
-    sed -i "s/# --country.*/--country Singapore,Hong Kong,Vietnam/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
+    sed -i "s/# --country.*/--country SG,HK,VN/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
     sed -i "s/--latest 5/--latest 10/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
     sed -i "s/--sort age/--sort rate/" /etc/xdg/reflector/reflector.conf &>> ~/.fis.log
     systemctl enable --now reflector.timer &>> ~/.fis.log
     systemctl start reflector.service &>> ~/.fis.log
     printf "\n[OK] Reflector started!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sleep 2
 }
 
@@ -77,10 +83,10 @@ f-packages() {
     pacman -S --noconfirm --needed base-devel pacman-contrib libffi \
         man zsh git unzip wget fzf zoxide postgresql postgresql-libs \
         python-pip python-pipx &>> ~/.fis.log
-    systemctl enable --now paccache.timer
-    sleep 2
+    systemctl enable --now paccache.timer &>> ~/.fis.log
     printf "\n[OK] Essential packages installed!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sleep 2
 }
 
@@ -92,15 +98,16 @@ f-git() {
     git config --global init.defaultBranch main
     printf "\n[OK] Config git as frsqredm done!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sleep 2
 }
 
 # Install OMP, nodeJS, bunJS
 f-extra() {
     curl -s https://ohmyposh.dev/install.sh | bash -s &>> ~/.fis.log
-    printf "\n[OK] oh-my-posh v$(oh-my-posh version) installed" &>> ~/.fis.log
+    printf "\n[OK] Oh-my-posh installed!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
-    printf "\n" &>> ~/.fis.log
+    printf "\n"
     sleep 1
     curl -fsSL https://fnm.vercel.app/install | bash &>> ~/.fis.log
     curl -fsSL https://bun.sh/install | bash &>> ~/.fis.log
@@ -108,8 +115,10 @@ f-extra() {
     fnm use --install-if-missing 22 &>> ~/.fis.log
     printf "\n[OK] NodeJS $(node -v) installed!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     printf "\n[OK] BunJS v$(bun -v) installed!" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sleep 2
 }
 
@@ -125,16 +134,17 @@ f-config() {
     ln -s ~/.config/zsh/.zshrc ~/.zshrc &>> ~/.fis.log
     printf "\n[OK] Config files save at ~/.config !" &>> ~/.fis.log
     tail -n 1 ~/.fis.log
+    printf "\n"
     sleep 2
 }
 
 # Finish
 f-finish() {
-    printf "\n[OK] FIS Install Script $fis_version finished !! \n"
+    printf "\n[OK] FIS Install Script finished !! \n"
     printf "\nTODO: 
     1. Change default shell by chsh and exec zsh.
-    2. Delete .fis.log file. \n"
-    rm ~/.fis.sh
+    2. Review and delete .fis.log file. \n"
+    rm ~/.fis.sh &>> ~/.fis.log
     sleep 2
 }
 
@@ -143,7 +153,7 @@ f-cancell () {
     gum spin --spinner minidot --title="Cancelling script ..." -- sleep 2
     printf "\n[OK] Script cancelled! \n"
     printf "\nSee you later! \n"
-    rm ~/.fis.sh
+    rm ~/.fis.sh &>> ~/.fis.log
     sleep 2
 }
 
