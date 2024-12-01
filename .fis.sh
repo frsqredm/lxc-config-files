@@ -6,7 +6,8 @@ touch ~/.fis.log
 
 # Edit pacman config
 f-pacman() {
-    printf "\nEditing pacman config ... \n"
+    printf "\nEditing pacman config ... " &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     sed -i "s/#ParallelDownloads.*/ParallelDownloads = 10\nILoveCandy/" /etc/pacman.conf
     sleep 1
     sed -i "s/#Color/Color/" /etc/pacman.conf
@@ -21,7 +22,8 @@ export -f f-pacman && bash -c f-pacman
 
 # Initialize the keyring
 f-keyring() {
-    printf "\nInitializing the keyring ... \n" &>> ~/.fis.log
+    printf "\nInitializing the keyring ... " &>> ~/.fis.log
+    tail -n 1 ~/.fis.log
     rm -rf /etc/pacman.d/gnupg
     pacman-key --init &>> ~/.fis.log
     pacman-key --populate &>> ~/.fis.log
