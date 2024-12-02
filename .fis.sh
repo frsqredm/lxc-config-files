@@ -39,7 +39,7 @@ unset -f f-keyring
 f-gum() {
     printf "\nInstalling gum and reflector ..." | tee -a ~/.fis.log
     pacman -S --noconfirm --needed gum reflector | tee -a ~/.fis.log
-    printf "\n[OK] Gum and reflector installed!" | tee -a ~/.fis.log
+    printf "\n[OK] Gum and reflector installed! \n" | tee -a ~/.fis.log
     sleep 2
 }
 
@@ -55,20 +55,20 @@ f-reflector() {
     systemctl enable --now reflector.timer | tee -a ~/.fis.log
     systemctl start reflector.service | tee -a ~/.fis.log
     gum log --file ~/.fis.log --time DateTime --level info "[OK] Reflector started!"
-    gum log --time DateTime --level info "[OK] Reflector started!"
     sleep 2
     clear
 }
 
 export -f f-reflector
 gum log --time DateTime --level info "Enabling reflector ..."
-gum spin --spinner minidot --show-output --title="" -- bash -c f-reflector
+gum spin --spinner minidot --show-error --title="" -- bash -c f-reflector
+gum log --time DateTime --level info "[OK] Reflector started!"
 unset -f f-reflector
 
 # Introduction
 gum style \
 	    --border normal \
-	    --align left --width $COLUMNS --margin "0 0" --padding "0 0" \
+	    --align left --width $(($COLUMNS-10)) --margin "0 0" --padding "0 0" \
 	    "FIS Install Script" \
         "1. Install essential packages: pacman-contrib zsh git unzip postgresql wget" \
         "2. Install more packages: reflector python fzf zoxide" \
@@ -107,9 +107,10 @@ f-extra() {
     gum log --file ~/.fis.log --time DateTime --level info "[OK] Oh-my-posh installed!"
     curl -fsSL https://fnm.vercel.app/install | bash | tee -a ~/.fis.log
     curl -fsSL https://bun.sh/install | bash | tee -a ~/.fis.log
-    source ~/.bashrc | tee -a ~/.fis.log
+    source ~/.bashrc
     fnm use --install-if-missing 22 | tee -a ~/.fis.log
     gum log --file ~/.fis.log --time DateTime --level info "[OK] NodeJS $(node -v) installed!"
+    source ~/.bashrc
     gum log --file ~/.fis.log --time DateTime --level info "[OK] BunJS v$(bun -v) installed!"
 }
 
@@ -131,17 +132,17 @@ f-config() {
 f-finish() {
     gum log --file ~/.fis.log --time DateTime --level info "[OK] FIS Install Script finished!"
     gum log --time DateTime --level info "[OK] FIS Install Script finished!"
-    printf "\nTODO: 
+    printf "TODO: 
     1. Change default shell by chsh and exec zsh.
     2. Review and delete .fis.log file. \n" | tee -a ~/.fis.log
-    rm ~/.fis.sh | tee -a ~/.fis.log
+    rm ~/.fis.sh &>> ~/.fis.log
     gum log --time DateTime --level info  "Goodbye!"
 }
 
 # Cancell script
 f-cancell () {
     gum log --file ~/.fis.log --time DateTime --level info "Cancelling script ..."
-    rm ~/.fis.sh | tee -a ~/.fis.log
+    rm ~/.fis.sh &>> ~/.fis.log
     gum log --file ~/.fis.log --time DateTime --level info "[CANCELL] FIS Install Script cancelled. See you later!"
     sleep 3
 }
@@ -165,7 +166,7 @@ if [ "$ANS" == "yes" ]; then
     gum log --time DateTime --level info "[OK] BunJS v$(bun -v) installed!"
     sleep 2
     gum log --time DateTime --level info "Getting config file for zsh, OMP ... "
-    gum spin --spinner minidot --show-error --title="G" -- bash -c f-config
+    gum spin --spinner minidot --show-error --title="" -- bash -c f-config
     gum log --time DateTime --level info "[OK] Config files save at ~/.config folder!"
     sleep 2
     bash -c f-finish
